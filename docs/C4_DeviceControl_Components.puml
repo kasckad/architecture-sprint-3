@@ -1,0 +1,15 @@
+@startuml DevicesServiceComponents
+!include <C4/C4_Component>
+
+Container_Boundary(Devices, "Devices Services") {
+  Component(DevicesController, "DevicesController", "REST Controller", "Управление устройством через API")
+  Component(kafkaListener, "DevicesCommandListener", "Kafka Consumer", "Слушает команды")
+  Component(logicService, "DevicesService", "Java Service", "Включение/выключение")
+  Component(deviceAdapter, "DeviceCommandAdapter", "Adapter", "Отправка команд устройствам через Kafka")
+}
+
+Rel(DevicesController, logicService, "Передаёт команды")
+Rel(kafkaListener, logicService, "Обрабатывает события")
+Rel(logicService, deviceAdapter, "Управляет устройствами")
+
+@enduml

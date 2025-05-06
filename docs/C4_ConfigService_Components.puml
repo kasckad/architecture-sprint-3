@@ -1,0 +1,15 @@
+@startuml ConfigServiceComponents
+!include <C4/C4_Component>
+
+Container_Boundary(config, "Config Service") {
+  Component(configController, "ConfigController", "REST Controller", "CRUD настроек устройств")
+  Component(ruleEngine, "RuleEngine", "Java Service", "Обработка сценариев типа «если-то»")
+  Component(kafkaPublisher, "CommandPublisher", "Kafka Producer", "Публикация команд в Kafka")
+  Component(telemetryListener, "TelemetryListener", "Kafka Consumer", "Слушает телеметрию")
+}
+
+Rel(configController, ruleEngine, "Создаёт/обновляет правила")
+Rel(telemetryListener, ruleEngine, "Подаёт события")
+Rel(ruleEngine, kafkaPublisher, "Генерирует команды")
+
+@enduml

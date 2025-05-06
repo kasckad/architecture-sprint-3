@@ -1,0 +1,239 @@
+asyncapi: 3.0.0
+info:
+  title: Smart Home - Async Messaging
+  version: 1.0.0
+  description: Асинхронное взаимодействие между микросервисами умного дома через Kafka
+defaultContentType: application/json
+servers:
+  kafkaServer:
+    host: 'kafka:9092'
+    protocol: kafka
+channels:
+  heating.command:
+    address: heating.command
+    messages:
+      receiveHeatingCommand.message:
+        $ref: '#/components/messages/DeviceCommand'
+  heating.statusChanged:
+    address: heating.statusChanged
+    messages:
+      publishHeatingStatus.message:
+        $ref: '#/components/messages/DeviceStatusChanged'
+  lighting.command:
+    address: lighting.command
+    messages:
+      receiveLightingCommand.message:
+        $ref: '#/components/messages/DeviceCommand'
+  lighting.statusChanged:
+    address: lighting.statusChanged
+    messages:
+      publishLightingStatus.message:
+        $ref: '#/components/messages/DeviceStatusChanged'
+  gate.command:
+    address: gate.command
+    messages:
+      receiveGateCommand.message:
+        $ref: '#/components/messages/DeviceCommand'
+  gate.statusChanged:
+    address: gate.statusChanged
+    messages:
+      publishGateStatus.message:
+        $ref: '#/components/messages/DeviceStatusChanged'
+  video.motionDetected:
+    address: video.motionDetected
+    messages:
+      publishVideoEvent.message:
+        $ref: '#/components/messages/VideoEvent'
+  telemetry.data:
+    address: telemetry.data
+    messages:
+      publishTelemetry.message:
+        $ref: '#/components/messages/TelemetryData'
+      receiveTelemetry.message:
+        $ref: '#/components/messages/TelemetryData'
+  notification.event:
+    address: notification.event
+    messages:
+      receiveNotificationEvent.message:
+        $ref: '#/components/messages/NotificationEvent'
+operations:
+  receiveHeatingCommand:
+    action: send
+    channel:
+      $ref: '#/channels/heating.command'
+    summary: Команды от ConfigService
+    messages:
+      - $ref: '#/channels/heating.command/messages/receiveHeatingCommand.message'
+  publishHeatingStatus:
+    action: receive
+    channel:
+      $ref: '#/channels/heating.statusChanged'
+    summary: Событие об изменении состояния отопления
+    messages:
+      - $ref: '#/channels/heating.statusChanged/messages/publishHeatingStatus.message'
+  receiveLightingCommand:
+    action: send
+    channel:
+      $ref: '#/channels/lighting.command'
+    summary: Команды от ConfigService
+    messages:
+      - $ref: '#/channels/lighting.command/messages/receiveLightingCommand.message'
+  publishLightingStatus:
+    action: receive
+    channel:
+      $ref: '#/channels/lighting.statusChanged'
+    summary: Событие об изменении состояния света
+    messages:
+      - $ref: >-
+          #/channels/lighting.statusChanged/messages/publishLightingStatus.message
+  receiveGateCommand:
+    action: send
+    channel:
+      $ref: '#/channels/gate.command'
+    summary: Команды от ConfigService
+    messages:
+      - $ref: '#/channels/gate.command/messages/receiveGateCommand.message'
+  publishGateStatus:
+    action: receive
+    channel:
+      $ref: '#/channels/gate.statusChanged'
+    summary: Событие об изменении состояния ворот
+    messages:
+      - $ref: '#/channels/gate.statusChanged/messages/publishGateStatus.message'
+  publishVideoEvent:
+    action: receive
+    channel:
+      $ref: '#/channels/video.motionDetected'
+    summary: Событие о зафиксированном движении
+    messages:
+      - $ref: '#/channels/video.motionDetected/messages/publishVideoEvent.message'
+  publishTelemetry:
+    action: receive
+    channel:
+      $ref: '#/channels/telemetry.data'
+    summary: Телеметрия от устройств
+    messages:
+      - $ref: '#/channels/telemetry.data/messages/publishTelemetry.message'
+  receiveTelemetry:
+    action: send
+    channel:
+      $ref: '#/channels/telemetry.data'
+    summary: Используется ConfigService для оценки правил
+    messages:
+      - $ref: '#/channels/telemetry.data/messages/receiveTelemetry.message'
+  receiveNotificationEvent:
+    action: send
+    channel:
+      $ref: '#/channels/notification.event'
+    summary: Уведомление на основе события
+    messages:
+      - $ref: >-
+          #/channels/notification.event/messages/receiveNotificationEvent.message
+components:
+  messages:
+    DeviceCommand:
+      name: DeviceCommand
+      title: Команда к устройству
+      payload:
+        type: object
+        required:
+          - deviceId
+          - action
+        properties:
+          deviceId:
+            type: string
+            format: uuid
+          action:
+            type: string
+            enum:
+              - 'ON'
+              - 'OFF'
+              - OPEN
+              - CLOSE
+              - RECORD
+          correlationId:
+            type: string
+    DeviceStatusChanged:
+      name: DeviceStatusChanged
+      title: Изменение состояния устройства
+      payload:
+        type: object
+        required:
+          - deviceId
+          - status
+          - timestamp
+        properties:
+          deviceId:
+            type: string
+          status:
+            type: string
+            enum:
+              - 'ON'
+              - 'OFF'
+              - OPEN
+              - CLOSED
+              - ERROR
+          timestamp:
+            type: string
+            format: date-time
+    TelemetryData:
+      name: TelemetryData
+      title: Телеметрия от устройства
+      payload:
+        type: object
+        required:
+          - deviceId
+          - type
+          - value
+          - timestamp
+        properties:
+          deviceId:
+            type: string
+          type:
+            type: string
+            example: temperature
+          value:
+            type: number
+          timestamp:
+            type: string
+            format: date-time
+    VideoEvent:
+      name: VideoEvent
+      title: Событие видеонаблюдения
+      payload:
+        type: object
+        required:
+          - cameraId
+          - eventType
+          - timestamp
+        properties:
+          cameraId:
+            type: string
+          eventType:
+            type: string
+            enum:
+              - motionDetected
+              - cameraOffline
+          timestamp:
+            type: string
+            format: date-time
+    NotificationEvent:
+      name: NotificationEvent
+      title: Уведомление пользователю
+      payload:
+        type: object
+        required:
+          - userId
+          - message
+          - type
+        properties:
+          userId:
+            type: string
+          message:
+            type: string
+          type:
+            type: string
+            enum:
+              - EMAIL
+              - PUSH
+              - SMS

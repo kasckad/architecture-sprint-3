@@ -1,0 +1,70 @@
+@startuml
+title ER-диаграмма — Умный дом
+
+entity User {
+  * id: UUID <<PK>>
+  --
+  login: String
+  passwordHash: String
+  email: String
+  phone: String
+  createdAt: DateTime
+}
+
+entity Device {
+  * id: UUID <<PK>>
+  --
+  userId: UUID <<FK>>
+  name: String
+  type: String
+  location: String
+  status: String
+  lastSeen: DateTime
+}
+
+entity DeviceConfig {
+  * id: UUID <<PK>>
+  --
+  deviceId: UUID <<FK>>
+  key: String
+  value: String
+}
+
+entity AutomationRule {
+  * id: UUID <<PK>>
+  --
+  userId: UUID <<FK>>
+  name String
+  condition: String
+  action: String
+  enabled: Boolean
+  createdAt: DateTime
+}
+
+entity TelemetryRecord {
+  * id: UUID <<PK>>
+  --
+  deviceId: UUID <<FK>>
+  timestamp: DateTime
+  type: String
+  value: String
+}
+
+entity Notification {
+  * id: UUID <<PK>>
+  --
+  userId: UUID <<FK>>
+  type: String
+  message: String
+  status: String
+  sentAt: DateTime
+}
+
+' Связи между сущностями
+User ||--o{ Device : "владеет"
+Device ||--o{ DeviceConfig : "имеет настройки"
+User ||--o{ AutomationRule : "создаёт правило"
+Device ||--o{ TelemetryRecord : "передаёт данные"
+User ||--o{ Notification : "получает уведомления"
+
+@enduml

@@ -1,0 +1,19 @@
+@startuml NotificationServiceComponents
+!include <C4/C4_Component>
+LAYOUT_WITH_LEGEND()
+
+Container_Boundary(notification, "Notification Service") {
+
+  Component(kafkaListener, "NotificationEventListener", "Kafka Consumer", "Слушает события из Kafka: алерты, статусы, события")
+  Component(notificationRouter, "NotificationRouter", "Java Service", "Роутинг уведомлений по типу канала")
+  Component(emailSender, "EmailSender", "Adapter", "Отправка email через SMTP")
+  Component(pushSender, "PushSender", "Adapter", "Отправка push")
+  Component(smsSender, "SmsSender", "Adapter", "Отправка SMS через провайдеров")
+}
+
+Rel(kafkaListener, notificationRouter, "Обрабатывает событие")
+Rel(notificationRouter, emailSender, "Если Email")
+Rel(notificationRouter, pushSender, "Если Push")
+Rel(notificationRouter, smsSender, "Если SMS")
+
+@enduml

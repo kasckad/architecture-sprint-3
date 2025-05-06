@@ -126,7 +126,7 @@ override.tf.json
 # example: *tfplan*
 
 # Ignore CLI configuration files
-.terraformrc
+terraform/.terraformrc
 terraform.rc
 
 ### VisualStudioCode ###

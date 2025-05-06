@@ -1,0 +1,87 @@
+@startuml
+title Config Service
+
+' Пакет: Контроллеры
+package "controller" {
+  class ConfigController {
+    +createConfig()
+    +updateRule()
+    +getDeviceSettings()
+  }
+}
+
+' Пакет: Kafka-интеграция
+package "kafka" {
+  class TelemetryListener {
+    +onMessage(event: TelemetryEvent)
+  }
+
+  class CommandPublisher {
+    +sendCommand(command: DeviceCommand)
+  }
+}
+
+' Пакет: Сервисный слой
+package "service" {
+  class AutomationEngine {
+    +evaluateRules(event: TelemetryEvent)
+  }
+
+  class ConfigService {
+    +saveDeviceConfig()
+    +saveAutomationRule()
+    +getConfigsByUser()
+  }
+}
+
+' Пакет: Persistence (JPA)
+package "persistence" {
+  class ConfigRepository <<interface>> {
+    +save(DeviceConfig)
+    +findByUserId()
+  }
+
+  class RuleRepository <<interface>> {
+    +save(AutomationRule)
+    +findByCondition()
+  }
+}
+
+' Пакет: Модели
+package "model" {
+  class DeviceConfig {
+    deviceId: String
+    settings: Map<String, String>
+  }
+
+  class AutomationRule {
+    id: UUID
+    condition: String
+    action: String
+  }
+
+  class TelemetryEvent {
+    deviceId: String
+    type: String
+    value: String
+    timestamp: DateTime
+  }
+
+  class DeviceCommand {
+    deviceId: String
+    action: String
+  }
+}
+
+' Связи
+ConfigController --> ConfigService
+ConfigService --> ConfigRepository
+ConfigService --> RuleRepository
+TelemetryListener --> TelemetryEvent
+TelemetryListener --> AutomationEngine
+AutomationEngine --> AutomationRule
+AutomationEngine --> CommandPublisher
+ConfigService --> DeviceConfig
+CommandPublisher --> DeviceCommand
+
+@enduml

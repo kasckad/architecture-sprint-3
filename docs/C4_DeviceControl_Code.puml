@@ -1,0 +1,67 @@
+@startuml
+title Device Service
+
+' Пакет: Контроллеры
+package "controller" {
+  class DeviceController {
+    +setDeviceState(deviceId, state)
+    +getCurrentStatus(deviceId)
+  }
+}
+
+' Пакет: Kafka
+package "kafka" {
+  class DeviceCommandListener {
+    +onMessage(command: DeviceCommand)
+  }
+
+  class DeviceEventPublisher {
+    +publishEvent(event: DeviceStatusChanged)
+  }
+}
+
+' Пакет: Сервисный слой
+package "service" {
+  class DeviceControlService {
+    +turnOn(deviceId)
+    +turnOff(deviceId)
+    +handleCommand(command: DeviceCommand)
+  }
+}
+
+' Пакет: Инфраструктура
+package "device" {
+  class DeviceCommandSender {
+    +sendCommand(deviceId, action)
+  }
+}
+
+' Пакет: Модель
+package "model" {
+  class DeviceCommand {
+    deviceId: String
+    action: String
+  }
+
+  class DeviceStatusChanged {
+    deviceId: String
+    status: String
+    timestamp: DateTime
+  }
+
+  class DeviceStatus {
+    deviceId: String
+    currentState: String
+  }
+}
+
+' Взаимодействие
+DeviceController --> DeviceControlService : вызывает
+DeviceCommandListener --> DeviceControlService : обрабатывает
+DeviceControlService --> DeviceCommandSender : отправляет команду
+DeviceControlService --> DeviceEventPublisher : публикует событие
+DeviceCommandListener --> DeviceCommand
+DeviceControlService --> DeviceCommand
+DeviceEventPublisher --> DeviceStatusChanged
+
+@enduml
