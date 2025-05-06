@@ -1,0 +1,63 @@
+@startuml
+!include <C4/C4_Container>
+
+LAYOUT_WITH_LEGEND()
+
+Person(user, "Пользователь", "Управляет умным домом через веб/мобильное приложение")
+
+System_Boundary(c1, "Система 'Умный дом'") {
+
+  Container(mobileApp, "Мобильное приложение", "Flutter / Kotlin / Swift", "Управление системой с мобильного устройства")
+  Container(webApp, "Веб-приложение", "React / Angular", "Управление системой через браузер")
+  Container(apiGateway, "API Gateway", "Kong / NGINX", "Обрабатывает все входящие HTTP-запросы и маршрутизирует к микросервисам")
+
+  Container(heatingService, "Heating Service", "Java (Spring Boot)", "Управление отоплением через Kafka")
+  Container(lightingService, "Lighting Service", "Java (Spring Boot)", "Управление светом через Kafka")
+  Container(gateService, "Gate Control Service", "Java (Spring Boot)", "Управление воротами через Kafka")
+  Container(videoService, "Video Surveillance Service", "Java (Spring Boot)", "Управление видеопотоками через Kafka")
+
+  Container(configAutomationService, "Config Service", "Java (Spring Boot)", "Настройка сценариев и управление конфигурацией устройств")
+  Container(telemetryService, "Telemetry Service", "Java (Spring Boot)", "Приём и хранение телеметрии с устройств через Kafka")
+  Container(userService, "User Service", "Java (Spring Security)", "Регистрация, авторизация, управление пользователями")
+  Container(notificationService, "Notification Service", "Java (Spring Boot)", "Отправка Email, Push и SMS уведомлений")
+
+  ContainerDb(telemetryDb, "Telemetry DB", "PostgreSQL", "Хранение телеметрических данных")
+  ContainerDb(userDb, "User DB", "PostgreSQL", "Хранение данных пользователей и ролей")
+  ContainerDb(configAutomationDb, "Config DB", "PostgreSQL", "Настройки устройств и сценарии автоматизации")
+
+  Container(kafka, "Kafka", "Apache Kafka", "Event Streaming между микросервисами")
+}
+
+System_Ext(externalSensor, "Внешние сенсоры", "Датчики температуры, движения и т.д.")
+System_Ext(externalDevice, "Внешние устройства", "Физические исполнительные устройства: лампы, камеры, ворота")
+
+Rel(user, mobileApp, "Использует")
+Rel(user, webApp, "Использует")
+Rel(mobileApp, apiGateway, "HTTP/HTTPS")
+Rel(webApp, apiGateway, "HTTP/HTTPS")
+
+Rel(apiGateway, userService, "REST")
+Rel(apiGateway, heatingService, "REST")
+Rel(apiGateway, lightingService, "REST")
+Rel(apiGateway, gateService, "REST")
+Rel(apiGateway, videoService, "REST")
+Rel(apiGateway, configAutomationService, "REST")
+Rel(apiGateway, telemetryService, "REST (метаданные)")
+Rel(apiGateway, notificationService, "REST")
+
+Rel(telemetryService, kafka, "Публикация телеметрии")
+Rel(configAutomationService, kafka, "Публикация настроек, команд и чтение телеметрии")
+Rel(notificationService, kafka, "Чтение событий для уведомлений")
+Rel(heatingService, kafka, "Команды,события, уведомления")
+Rel(lightingService, kafka, "Команды,события, уведомления")
+Rel(gateService, kafka, "Команды,события, уведомления")
+Rel(videoService, kafka, "Команды,события, уведомления")
+
+Rel(telemetryService, telemetryDb, "JDBC")
+Rel(userService, userDb, "JDBC")
+Rel(configAutomationService, configAutomationDb, "JDBC")
+
+Rel(kafka, externalSensor, "События от сенсоров")
+Rel(kafka, externalDevice, "Команды к устройствам")
+
+@enduml

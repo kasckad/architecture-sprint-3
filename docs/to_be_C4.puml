@@ -1,0 +1,31 @@
+@startuml
+set separator none
+title Система Умный дом
+
+top to bottom direction
+
+!include <C4/C4>
+!include <C4/C4_Context>
+
+AddBoundaryTag("smart_home", $borderColor="#cccccc", $fontColor="#cccccc", $borderStyle="dashed")
+Boundary(group_1, "Умный дом", $tags="smart_home") {
+  System(DeviceManagingSystem, "Система управления устройствами", $descr="Управление устройствами.", $tags="", $link="")
+  System(MonitoringSystem, "Система мониторинга", $descr="Система получения телеметрии датчиков.", $tags="", $link="")
+  System(SettingsSystem, "Система управления настройками", $descr="Система управления настройками и сценариями.", $tags="", $link="")
+}
+
+System_Ext(ExternalDevice, "Внешние устройства", $descr="Устройства дома")
+System_Ext(ExternalSensor, "Внешние датчики", $descr="Сенсоры дома")
+
+Person(User, "Пользователь системы Умного дома", $descr="Пользователь со своим профилем и набором устройств.", $tags="", $link="")
+
+Rel(User, DeviceManagingSystem, "Включение\выключение устройств", $techn="", $tags="", $link="")
+Rel(DeviceManagingSystem, ExternalDevice, "Команды управления устройствами", $techn="", $tags="", $link="")
+Rel(SettingsSystem, DeviceManagingSystem, "Управление устройствами в зависимости от настроек.", $techn="", $tags="", $link="")
+Rel(User, SettingsSystem, "Изменение настроек устройств", $techn="", $tags="", $link="")
+Rel(ExternalSensor, MonitoringSystem, "Отправка телеметрии с сенсоров", $techn="", $tags="", $link="")
+Rel(SettingsSystem, MonitoringSystem, "Получение текущих данных.", $techn="", $tags="", $link="")
+
+
+SHOW_LEGEND(true)
+@enduml
